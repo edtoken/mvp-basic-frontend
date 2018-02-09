@@ -35,7 +35,9 @@ export const IS_MOBILE = /iphone|ipad|ipod|android|blackberry|mini|windows\sce|p
 export const IS_BROWSER =
   typeof window !== 'undefined' || typeof document !== 'undefined'
 
-export const DEVTOOLS_IS_ENABLED = Boolean(parseInt(get('DevTools:isEnable')))
+export const DEVTOOLS_IS_ENABLED = Boolean(
+  parseInt(get('DevTools:isEnable'), 10)
+)
 
 export const DEVTOOLS_IS_VISIBLE =
-  DEVTOOLS_IS_ENABLED && Boolean(parseInt(get('DevTools:isVisible')))
+  DEVTOOLS_IS_ENABLED && Boolean(parseInt(get('DevTools:isVisible'), 10))

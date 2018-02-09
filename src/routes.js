@@ -1,71 +1,93 @@
-import React from 'react'
-import { Redirect, Route, Switch } from 'react-router-dom'
-import { ConnectedRouter } from 'react-router-redux'
-import { DEVTOOLS_IS_ENABLED } from './config'
+import React from "react";
+import { Redirect, Route, Switch } from "react-router-dom";
+import { ConnectedRouter } from "react-router-redux";
+import { DEVTOOLS_IS_ENABLED } from "./config";
 
-import DevTools from './containers/DevTools'
-import LayoutContainer from './containers/layout/LayoutContainer'
-import asyncComponent from './hoc/AsyncComponentHoc'
+import DevTools from "./containers/DevTools";
+import LayoutContainer from "./containers/layout/LayoutContainer";
+import asyncComponent from "./hoc/AsyncComponentHoc";
 
 export const routes = [
+  // {
+  //   type: "redirect",
+  //   from: "/",
+  //   to: "/dashboard"
+  // },
   {
-    name: 'editor-index',
-    path: 'edit',
+    name: "index-new",
+    path: "/",
     component: asyncComponent(
-      import('./containers/modules/Editor/EditorPage').then(
-        module => module.default
+      import("./containers/modules/User/pages/DashBoardPage").then(
+        cmp => cmp.default
       )
     )
   },
   {
-    name: 'tester-index',
-    path: 'test',
+    name: "dashboard",
+    path: "/dashboard",
     component: asyncComponent(
-      import('./containers/modules/Tester/TesterPage').then(
-        module => module.default
+      import("./containers/modules/User/pages/DashBoardPage").then(
+        cmp => cmp.default
       )
     )
   },
   {
-    name: 'deploy-index',
-    path: 'deploy',
+    name: "login",
+    path: "/login",
     component: asyncComponent(
-      import('./containers/modules/Deploy/DeployPage').then(
-        module => module.default
+      import("./containers/modules/User/pages/AuthPage").then(
+        cmp => cmp.default
+      )
+    )
+  },
+  {
+    name: "notfound",
+    path: "*",
+    component: asyncComponent(
+      import("./containers/modules/User/pages/NotFoundPage").then(
+        cmp => cmp.default
       )
     )
   }
-]
+];
 
 const makeRoute = (parent, store, level) => route => {
-  const RouteComponent = route.type === 'redirect' ? Redirect : Route
-  const nextLevel = level + 1
-  route.key = [level, parent, route.path].join()
+  const isNotComponentRoute = route.type === "redirect";
+  const RouteComponent = isNotComponentRoute ? Redirect : Route;
+  const nextLevel = level + 1;
+  route.key = [level, parent, route.path].join("-");
 
   if (route.children) {
-    route.children = makeRoutes(route.children, store, route.path, nextLevel)
+    route.children = makeRoutes(route.children, store, route.path, nextLevel);
   }
 
-  return <RouteComponent {...route} />
-}
+  if (!isNotComponentRoute && !route.component) {
+    route.component = props => (
+      <div>
+        <h1>Empty Route</h1> {JSON.stringify(route, null, 2)}
+        <hr /> {JSON.stringify(props, null, 2)}
+      </div>
+    );
+  }
 
-const makeRoutes = (list, store, parent = '', level) => {
-  return list.map(makeRoute(parent, store, level))
-}
+  return <RouteComponent {...route} />;
+};
+
+const makeRoutes = (list, store, parent, level) => {
+  return list.map(makeRoute(parent, store, level));
+};
 
 export const makeRouter = (store, history) => {
   return (
     <div>
       <ConnectedRouter history={history}>
-        <LayoutContainer>
-          {DEVTOOLS_IS_ENABLED && (
-            <div>
-              <DevTools />
-            </div>
-          )}
-          <Switch>{makeRoutes(routes, store, '', 0)}</Switch>
-        </LayoutContainer>
+        <div>
+          {DEVTOOLS_IS_ENABLED && <DevTools />}
+          <LayoutContainer>
+            <Switch>{makeRoutes(routes, store, "root", 0)}</Switch>
+          </LayoutContainer>
+        </div>
       </ConnectedRouter>
     </div>
-  )
-}
+  );
+};
